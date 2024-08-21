@@ -1,5 +1,5 @@
 const Collector = require("../models/collectorModel");
-const { hashPassword } = require("../config/password");
+const { hashPassword, verifyPassword } = require("../config/password");
 const {
   generateToken,
   encryptToken,
@@ -7,7 +7,7 @@ const {
 } = require("../config/token");
 const generateID = require("../config/generateID");
 
-const registerUser = async (req, res) => {
+const registerCollector = async (req, res) => {
   const userData = req.body;
 
   try {
@@ -38,4 +38,73 @@ const registerUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser };
+const loginCollector = async (req, res) => {
+  const userData = req.body;
+
+  try {
+    const user = await Collector.findOne({ email: userData.email });
+
+    if (!user) {
+      return res.status(401).json({ error: "User does not exist" });
+    }
+
+    const success = await verifyPassword(user.password, userData.password);
+
+    if (!success) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+
+    const token = generateToken(user.email);
+
+    await Collector.findByIdAndUpdate(user._id, { token });
+
+    return res
+      .status(200)
+      .json({ success: "Login successful", token: encryptToken(token) });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+const deleteCollector = async (req, res) => {
+  const userData = req.query;
+
+  try {
+    const user = await Collector.findOneAndDelete({ email: userData.email });
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+    } else {
+      res.status(200).json({ success: "Account successfully deleted" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const updateCollector = async (req, res) => {
+  const email = req.query;
+  const updatedData = req.body;
+
+  try {
+    const update = await Collector.findOneAndUpdate(email, updatedData, {
+      new: true,
+      runValidators: true,
+    });
+    if (!update) {
+      return res.status(404).json({ error: "Update failed" });
+    }
+    res.status(200).json({ success: "Account successfully updated" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = {
+  registerCollector,
+  loginCollector,
+  deleteCollector,
+  updateCollector,
+};

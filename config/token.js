@@ -18,6 +18,21 @@ const generateToken = (email) => {
   }
 };
 
+const verifyToken = (token) => {
+  const secretKey = process.env.JWT_SECRET_KEY;
+
+  try {
+    const decode = jwt.verify(token, secretKey, { algorithms: ["HS256"] });
+    return { valid: true, expired: false, decode };
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return { valid: false, expired: true, decoded: null };
+    } else {
+      return { valid: false, expired: false, decoded: null };
+    }
+  }
+};
+
 const encryptToken = (token) => {
   const secretKey = process.env.CRYPTO_SECRET_KEY;
 
@@ -25,12 +40,13 @@ const encryptToken = (token) => {
   return cipherText;
 };
 
-const decryptToken = (encryptedToken) => {
+const decryptToken = (req, res) => {
+  const encryptedToken = req.body;
   const secretKey = process.env.CRYPTO_SECRET_KEY;
 
   const bytes = CryptoJS.AES.decrypt(encryptedToken, secretKey);
   const decryptedToken = bytes.toString(CryptoJS.enc.Utf8);
-  return decryptedToken;
+  res.send(decryptedToken);
 };
 
-module.exports = { generateToken, encryptToken, decryptToken };
+module.exports = { generateToken, encryptToken, decryptToken, verifyToken };
