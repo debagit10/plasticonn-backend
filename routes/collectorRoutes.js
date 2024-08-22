@@ -11,6 +11,6 @@ router.post("/register", registerCollector);
 router.post("/login", loginCollector);
 router.delete("/delete", deleteCollector);
 router.patch("/update", updateCollector);
-router.post("/changePassword", changePassword);
+router.patch("/changePassword", changePassword);
 
 module.exports = router;

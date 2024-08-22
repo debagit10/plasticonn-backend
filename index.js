@@ -3,8 +3,7 @@ const express = require("express");
 const connectDB = require("./config/db");
 const cors = require("cors");
 const collectorRoutes = require("./routes/collectorRoutes");
-// const authUser = require("./middleWare/authUser");
-// const { decryptToken } = require("./config/token");
+const dropOffCenterRoutes = require("./routes/dropOffCenterRoutes");
 const getOTP = require("./middleWare/getOTP");
 
 const app = express();
@@ -22,5 +21,6 @@ app.get("/", (req, res) => {
 app.get("/getOTP", getOTP);
 
 app.use("/api/collector", collectorRoutes);
+app.use("/api/dropOffCenter", dropOffCenterRoutes);
 
 app.listen(PORT, () => console.log(`Server is live on port ${PORT}`));

@@ -1,6 +1,7 @@
 const otpGenerator = require("otp-generator");
 const Otp = require("../models/otpModel");
 const Collector = require("../models/collectorModel");
+const DropOffCenter = require("../models/dropOffCenterModel");
 
 const generateOtp = () => {
   const otp = otpGenerator.generate(6, {
@@ -28,9 +29,10 @@ const storeOtp = async (email, otp) => {
 // Verify OTP
 const verifyOtp = async (email, otp) => {
   const userExists = await Collector.findOne({ email });
+  const centerExists = await DropOffCenter.find({ email });
   const otpEntry = await Otp.findOne({ email });
 
-  if (!userExists) {
+  if (!userExists || !centerExists) {
     return { error: "Invalid email" };
   }
 
