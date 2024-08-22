@@ -45,9 +45,4 @@ const verifyOtp = async (email, otp) => {
   return { success: "OTP verified" };
 };
 
-// Clear OTP after successful verification
-const clearOtp = async (email) => {
-  await Otp.findOneAndDelete({ email });
-};
-
-module.exports = { generateOtp, storeOtp, verifyOtp, clearOtp };
+module.exports = { generateOtp, storeOtp, verifyOtp };
