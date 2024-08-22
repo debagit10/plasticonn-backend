@@ -6,6 +6,7 @@ const {
   decryptToken,
 } = require("../config/token");
 const generateID = require("../config/generateID");
+const { verifyOtp, clearOtp } = require("../config/otp");
 
 const registerCollector = async (req, res) => {
   const userData = req.body;
@@ -102,9 +103,36 @@ const updateCollector = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  const userDetails = req.body;
+
+  const verify = await verifyOtp(userDetails.email, userDetails.enteredOtp);
+
+  if (verify.error) {
+    res.status(400).json({ error: verify.error });
+  }
+
+  if (verify.success) {
+    const change = await Collector.findOneAndUpdate(
+      { email: userDetails.email },
+      {
+        password: await hashPassword(userDetails.password),
+      }
+    );
+    if (change) {
+      // await clearOtp(userDetails.email);
+
+      res
+        .status(200)
+        .json({ success: "Password changed successfully, go back to login" });
+    }
+  }
+};
+
 module.exports = {
   registerCollector,
   loginCollector,
   deleteCollector,
   updateCollector,
+  changePassword,
 };
