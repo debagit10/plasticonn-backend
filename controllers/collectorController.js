@@ -6,7 +6,7 @@ const {
   decryptToken,
 } = require("../config/token");
 const generateID = require("../config/generateID");
-const { verifyOtp, clearOtp } = require("../config/otp");
+const { verifyOtp } = require("../config/otp");
 
 const registerCollector = async (req, res) => {
   const userData = req.body;
