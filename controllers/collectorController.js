@@ -1,4 +1,5 @@
 const Collector = require("../models/collectorModel");
+const Collect = require("../models/collectModel");
 const { hashPassword, verifyPassword } = require("../config/password");
 const {
   generateToken,
@@ -103,6 +104,24 @@ const updateCollector = async (req, res) => {
   }
 };
 
+const collectorHistory = async (req, res) => {
+  const token = req.query;
+  const collector = await Collector.findOne({ token: token });
+  const collectorID = collector.collectorID;
+
+  try {
+    const history = await Collect.find({ collectorID: collectorID });
+    if (!history) {
+      res.status(400).json({ error: "User has no history" });
+    } else {
+      res.status(200).json({ success: history });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 const changePassword = async (req, res) => {
   const userDetails = req.body;
 
@@ -120,8 +139,6 @@ const changePassword = async (req, res) => {
       }
     );
     if (change) {
-      // await clearOtp(userDetails.email);
-
       res
         .status(200)
         .json({ success: "Password changed successfully, go back to login" });
@@ -135,4 +152,5 @@ module.exports = {
   deleteCollector,
   updateCollector,
   changePassword,
+  collectorHistory,
 };
