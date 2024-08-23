@@ -29,4 +29,4 @@ const drop = async (req, res) => {
   }
 };
 
-module.exports = drop;
+module.exports = { drop };

@@ -1,4 +1,5 @@
 const DropOffCenter = require("../models/dropOffCenterModel");
+const Drop = require("../models/dropModel");
 const { hashPassword, verifyPassword } = require("../config/password");
 const {
   generateToken,
@@ -133,10 +134,34 @@ const changePassword = async (req, res) => {
   }
 };
 
+const dropHistory = async (req, res) => {
+  const {
+    query: { token },
+  } = req;
+
+  try {
+    const dropOffCenter = await DropOffCenter.findOne({ token });
+    if (!dropOffCenter) {
+      return res.status(404).json({ error: "Drop-off center not found" });
+    }
+
+    const history = await Drop.find({ collectorID: dropOffCenter.collectorID });
+    if (history.length === 0) {
+      return res.status(400).json({ error: "No drop history found" });
+    }
+
+    res.status(200).json({ success: history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   registerCenter,
   loginCenter,
   deleteCenter,
   updateCenter,
   changePassword,
+  dropHistory,
 };

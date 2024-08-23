@@ -105,17 +105,22 @@ const updateCollector = async (req, res) => {
 };
 
 const collectorHistory = async (req, res) => {
-  const token = req.query;
-  const collector = await Collector.findOne({ token: token });
-  const collectorID = collector.collectorID;
+  const {
+    query: { token },
+  } = req;
 
   try {
-    const history = await Collect.find({ collectorID: collectorID });
-    if (!history) {
-      res.status(400).json({ error: "User has no history" });
-    } else {
-      res.status(200).json({ success: history });
+    const collector = await Collector.findOne({ token });
+    if (!collector) {
+      return res.status(404).json({ error: "Collector not found" });
     }
+
+    const history = await Collect.find({ collectorID: collector.collectorID });
+    if (history.length === 0) {
+      return res.status(400).json({ error: "No collection history found" });
+    }
+
+    res.status(200).json({ success: history });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
