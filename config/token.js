@@ -18,11 +18,13 @@ const generateToken = (email) => {
   }
 };
 
-const verifyToken = (token) => {
+const verifyToken = (encryptedToken) => {
   const secretKey = process.env.JWT_SECRET_KEY;
 
   try {
-    const decode = jwt.verify(token, secretKey, { algorithms: ["HS256"] });
+    const decode = jwt.verify(encryptedToken, secretKey, {
+      algorithms: ["HS256"],
+    });
     return { valid: true, expired: false, decode };
   } catch (error) {
     if (error.name === "TokenExpiredError") {
@@ -36,17 +38,36 @@ const verifyToken = (token) => {
 const encryptToken = (token) => {
   const secretKey = process.env.CRYPTO_SECRET_KEY;
 
-  const cipherText = CryptoJS.AES.encrypt(token, secretKey).toString();
-  return cipherText;
+  if (!token) {
+    return { error: "No token provided" };
+  }
+
+  try {
+    const cipherText = CryptoJS.AES.encrypt(token, secretKey).toString();
+    return { encryptedToken: cipherText };
+  } catch (error) {
+    console.error("Encryption error:", error);
+    return { error: "Server error" };
+  }
 };
 
-const decryptToken = (req, res) => {
-  const encryptedToken = req.body;
-  const secretKey = process.env.CRYPTO_SECRET_KEY;
+const decryptToken = (encryptedToken) => {
+  try {
+    const secretKey = process.env.CRYPTO_SECRET_KEY;
 
-  const bytes = CryptoJS.AES.decrypt(encryptedToken, secretKey);
-  const decryptedToken = bytes.toString(CryptoJS.enc.Utf8);
-  res.send(decryptedToken);
+    const bytes = CryptoJS.AES.decrypt(encryptedToken, secretKey);
+
+    const decryptedToken = bytes.toString(CryptoJS.enc.Utf8);
+
+    if (!decryptedToken) {
+      throw new Error("Decryption produced an empty result");
+    }
+
+    return decryptedToken;
+  } catch (error) {
+    console.error("Decryption error:", error.message);
+    throw new Error("Failed to decrypt token");
+  }
 };
 
 module.exports = { generateToken, encryptToken, decryptToken, verifyToken };

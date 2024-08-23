@@ -7,6 +7,7 @@ const dropOffCenterRoutes = require("./routes/dropOffCenterRoutes");
 const dropRoute = require("./routes/dropRoute");
 const collectRoute = require("./routes/collectRoute");
 const getOTP = require("./middleWare/getOTP");
+const authUser = require("./middleware/authUser");
 
 const app = express();
 const PORT = process.env.PORT || 5500;
@@ -19,6 +20,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.status(200).send("I AM PLASTICONN SERVER");
 });
+
+app.get("/auth", authUser);
 
 app.get("/getOTP", getOTP);
 

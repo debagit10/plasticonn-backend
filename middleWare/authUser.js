@@ -1,19 +1,27 @@
 const { verifyToken, decryptToken } = require("../config/token");
 
 const authUser = (req, res) => {
-  const encryptedToken = req.body;
+  const {
+    body: { encryptedToken },
+  } = req;
 
   try {
     if (!encryptedToken) {
-      res.status(400).json({ error: "No token" });
-    } else {
-      const decryptedToken = decryptToken(encryptedToken);
-      console.log(decryptedToken);
-      const verify = verifyToken(decryptedToken);
-      res.json(verify);
+      return res.status(400).json({ error: "No token provided" });
     }
+
+    const decryptedToken = decryptToken(encryptedToken);
+    res.json(decryptedToken); // Consider removing or sanitizing this log in production
+
+    const verificationResult = verifyToken(decryptedToken);
+
+    if (verificationResult.error) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    //res.status(200).json({ success: verificationResult });
   } catch (error) {
-    console.error(error);
+    console.error("Authentication error:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
