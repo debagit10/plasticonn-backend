@@ -2,20 +2,23 @@ const Collect = require("../models/collectModel");
 const Collector = require("../models/collectorModel");
 
 const collect = async (req, res) => {
-  const collectData = req.body;
-
-  const token = req.query;
+  const {
+    body: collectData,
+    query: { token },
+  } = req;
 
   try {
-    const collector = await Collector.findOne({ token: token });
-    const collectorID = collector.collectorID;
+    const collector = await Collector.findOne({ token });
+    if (!collector) {
+      return res.status(404).json({ error: "Collector not found" });
+    }
 
-    const collect = await Collect.create({
+    const newCollect = await Collect.create({
       ...collectData,
-      collectorID,
+      collectorID: collector.collectorID,
     });
 
-    if (collect) {
+    if (newCollect) {
       res.status(200).json({ success: "Successfully added" });
     } else {
       res.status(500).json({ error: "Failed to add" });
