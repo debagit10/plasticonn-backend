@@ -11,7 +11,7 @@ const authUser = (req, res) => {
     }
 
     const decryptedToken = decryptToken(encryptedToken);
-    res.json(decryptedToken); // Consider removing or sanitizing this log in production
+    // Consider removing or sanitizing this log in production
 
     const verificationResult = verifyToken(decryptedToken);
 
@@ -19,7 +19,7 @@ const authUser = (req, res) => {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    //res.status(200).json({ success: verificationResult });
+    res.status(200).json({ success: verificationResult });
   } catch (error) {
     console.error("Authentication error:", error);
     res.status(500).json({ error: "Server error" });
