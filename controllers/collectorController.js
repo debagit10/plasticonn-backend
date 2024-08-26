@@ -50,6 +50,10 @@ const loginCollector = async (req, res) => {
       return res.status(401).json({ error: "User does not exist" });
     }
 
+    if (user.deleted === true) {
+      return res.status(404).json({ error: "Account deleted" });
+    }
+
     const success = await verifyPassword(user.password, userData.password);
 
     if (!success) {
@@ -70,44 +74,80 @@ const loginCollector = async (req, res) => {
 };
 
 const deleteCollector = async (req, res) => {
-  const userData = req.query;
+  const token = req.decryptedToken;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: Missing token" });
+  }
 
   try {
-    const user = await Collector.findOneAndDelete({ email: userData.email });
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
-    } else {
-      res.status(200).json({ success: "Account successfully deleted" });
+    const collector = await Collector.findOne({ token, deleted: false });
+    if (!collector) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    const user = await Collector.findOneAndUpdate(
+      { email: collector.email },
+      {
+        deleted: true,
+        deletedAt: new Date(), // Optional: store the deletion time
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(400).json({ error: "Soft delete failed" });
+    }
+
+    res.status(200).json({ success: "Account successfully deleted" });
   } catch (error) {
-    console.error(error);
+    console.error("Error deleting collector:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 const updateCollector = async (req, res) => {
-  const email = req.query;
+  const token = req.decryptedToken;
   const updatedData = req.body;
 
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: Missing token" });
+  }
+
   try {
-    const update = await Collector.findOneAndUpdate(email, updatedData, {
-      new: true,
-      runValidators: true,
-    });
-    if (!update) {
-      return res.status(404).json({ error: "Update failed" });
+    const collector = await Collector.findOne({ token });
+    if (!collector) {
+      return res.status(404).json({ error: "User not found" });
     }
-    res.status(200).json({ success: "Account successfully updated" });
+
+    const update = await Collector.findOneAndUpdate(
+      { email: collector.email },
+      updatedData,
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Ensure validation is run on updated data
+      }
+    );
+
+    if (!update) {
+      return res.status(400).json({ error: "Update failed" });
+    }
+
+    res
+      .status(200)
+      .json({ success: "Account successfully updated", data: update });
   } catch (error) {
-    console.error(error);
+    console.error("Error updating collector:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 const collectorHistory = async (req, res) => {
-  const {
-    query: { token },
-  } = req;
+  const token = req.decryptedToken;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: Missing token" });
+  }
 
   try {
     const collector = await Collector.findOne({ token });
@@ -116,38 +156,59 @@ const collectorHistory = async (req, res) => {
     }
 
     const history = await Collect.find({ collectorID: collector.collectorID });
+
     if (history.length === 0) {
-      return res.status(400).json({ error: "No collection history found" });
+      return res.status(404).json({ error: "No collection history found" });
     }
 
-    res.status(200).json({ success: history });
+    res.status(200).json(history);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching collector history:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 const changePassword = async (req, res) => {
-  const userDetails = req.body;
+  try {
+    const userDetails = req.body;
+    const token = req.decryptedToken;
 
-  const verify = await verifyOtp(userDetails.email, userDetails.enteredOtp);
-
-  if (verify.error) {
-    res.status(400).json({ error: verify.error });
-  }
-
-  if (verify.success) {
-    const change = await Collector.findOneAndUpdate(
-      { email: userDetails.email },
-      {
-        password: await hashPassword(userDetails.password),
-      }
-    );
-    if (change) {
-      res
-        .status(200)
-        .json({ success: "Password changed successfully, go back to login" });
+    if (!token) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Invalid or missing token" });
     }
+
+    const collector = await Collector.findOne({ token });
+    if (!collector) {
+      return res.status(404).json({ error: "Collector not found" });
+    }
+
+    const verify = await verifyOtp(collector.email, userDetails.enteredOtp);
+
+    if (verify.error) {
+      return res.status(400).json({ error: verify.error });
+    }
+
+    if (verify.success) {
+      const change = await Collector.findOneAndUpdate(
+        { email: collector.email },
+        {
+          password: await hashPassword(userDetails.password),
+        }
+      );
+
+      if (change) {
+        return res
+          .status(200)
+          .json({ success: "Password changed successfully, go back to login" });
+      } else {
+        return res.status(500).json({ error: "Failed to change password" });
+      }
+    }
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 

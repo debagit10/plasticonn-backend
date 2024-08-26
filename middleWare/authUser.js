@@ -1,28 +1,30 @@
 const { verifyToken, decryptToken } = require("../config/token");
 
-const authUser = (req, res) => {
+const authUser = (req, res, next) => {
   const {
-    body: { encryptedToken },
+    body: { token },
   } = req;
 
   try {
-    if (!encryptedToken) {
-      return res.status(400).json({ error: "No token provided" });
+    if (!token) {
+      return res.redirect("/landing-page"); // Redirect to the landing page if no token is provided
     }
 
-    const decryptedToken = decryptToken(encryptedToken);
-    // Consider removing or sanitizing this log in production
-
+    const decryptedToken = decryptToken(token);
     const verificationResult = verifyToken(decryptedToken);
 
-    if (verificationResult.error) {
-      return res.status(401).json({ error: "Invalid token" });
+    if (verificationResult.error || verificationResult.valid === false) {
+      return res.redirect("/landing-page"); // Redirect to the landing page if the token is invalid or expired
     }
 
-    res.status(200).json({ success: verificationResult });
+    // Store the decrypted token in the req object so the next route can access it
+    req.decryptedToken = decryptedToken;
+
+    // Move to the next middleware or route
+    next();
   } catch (error) {
     console.error("Authentication error:", error);
-    res.status(500).json({ error: "Server error" });
+    res.redirect("/landing-page"); // Redirect to the landing page if there's a server error
   }
 };
 

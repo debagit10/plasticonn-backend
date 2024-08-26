@@ -6,9 +6,9 @@ const dropOffCenterSchema = mongoose.Schema(
     location: { type: [Number], required: true },
     person: { type: String, required: true },
     phone: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     operatingHours: { type: String, required: true },
-    centerID: { type: String, required: true },
+    centerID: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     pic: {
       type: String,
@@ -16,6 +16,7 @@ const dropOffCenterSchema = mongoose.Schema(
       default:
         "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
     },
+    deleted: { type: Boolean, default: false },
     token: { type: String, required: true },
   },
   {
