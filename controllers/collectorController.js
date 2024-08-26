@@ -1,5 +1,5 @@
 const Collector = require("../models/collectorModel");
-const Collect = require("../models/collectModel");
+const Collect = require("../models/dropModel");
 const { hashPassword, verifyPassword } = require("../config/password");
 const { generateToken, encryptToken } = require("../config/token");
 const generateID = require("../config/generateID");

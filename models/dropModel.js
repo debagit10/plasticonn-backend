@@ -2,13 +2,16 @@ const mongoose = require("mongoose");
 
 const dropSchema = mongoose.Schema(
   {
-    total: { type: String, required: true },
-    type: { type: [String], reuired: true },
+    type: { type: [String], required: true },
+    location: { type: [Number], required: true },
     collectorID: { type: String, required: true },
+    centerID: { type: String, required: true },
+    condition: { type: String, required: true },
+    accepted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-const Drop = mongoose.model("Drop", dropSchema);
+const Drop = mongoose.model("drop", dropSchema);
 
 module.exports = Drop;
