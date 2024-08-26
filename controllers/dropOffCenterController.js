@@ -1,11 +1,7 @@
 const DropOffCenter = require("../models/dropOffCenterModel");
 const Drop = require("../models/dropModel");
 const { hashPassword, verifyPassword } = require("../config/password");
-const {
-  generateToken,
-  encryptToken,
-  decryptToken,
-} = require("../config/token");
+const { generateToken, encryptToken } = require("../config/token");
 const generateID = require("../config/generateID");
 const { verifyOtp } = require("../config/otp");
 
@@ -52,7 +48,11 @@ const loginCenter = async (req, res) => {
       return res.status(401).json({ error: "Center does not exist" });
     }
 
-    const success = await verifyPassword(center.password, center.password);
+    if (center.deleted === true) {
+      return res.status(404).json({ error: "Account deleted" });
+    }
+
+    const success = await verifyPassword(center.password, userData.password);
 
     if (!success) {
       return res.status(401).json({ error: "Invalid password" });
@@ -60,7 +60,7 @@ const loginCenter = async (req, res) => {
 
     const token = generateToken(center.email);
 
-    await Collector.findByIdAndUpdate(center._id, { token });
+    await DropOffCenter.findByIdAndUpdate(center._id, { token });
 
     return res
       .status(200)
@@ -72,72 +72,123 @@ const loginCenter = async (req, res) => {
 };
 
 const deleteCenter = async (req, res) => {
-  const centerData = req.query;
+  const token = req.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: Missing token" });
+  }
 
   try {
-    const center = await DropOffCenter.findOneAndDelete({
-      email: centerData.email,
-    });
+    const center = await DropOffCenter.findOne({ token, deleted: false });
     if (!center) {
-      res.status(404).json({ error: "Center not found" });
-    } else {
-      res.status(200).json({ success: "Account successfully deleted" });
+      return res.status(404).json({ error: "Center not found" });
     }
+
+    const user = await DropOffCenter.findOneAndUpdate(
+      { email: center.email },
+      {
+        deleted: true,
+        deletedAt: new Date(), // Optional: store the deletion time
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(400).json({ error: "Soft delete failed" });
+    }
+
+    res.status(200).json({ success: "Account successfully deleted" });
   } catch (error) {
-    console.error(error);
+    console.error("Error deleting collector:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
-
 const updateCenter = async (req, res) => {
-  const email = req.query;
+  const token = req.token;
   const updatedData = req.body;
 
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: Missing token" });
+  }
+
   try {
-    const update = await Collector.findOneAndUpdate(email, updatedData, {
-      new: true,
-      runValidators: true,
-    });
-    if (!update) {
-      return res.status(404).json({ error: "Update failed" });
+    const center = await DropOffCenter.findOne({ token });
+    if (!center) {
+      return res.status(404).json({ error: "Center not found" });
     }
-    res.status(200).json({ success: "Account successfully updated" });
+
+    const update = await DropOffCenter.findOneAndUpdate(
+      { email: center.email },
+      updatedData,
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Ensure validation is run on updated data
+      }
+    );
+
+    if (!update) {
+      return res.status(400).json({ error: "Update failed" });
+    }
+
+    res
+      .status(200)
+      .json({ success: "Account successfully updated", data: update });
   } catch (error) {
-    console.error(error);
+    console.error("Error updating collector:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 const changePassword = async (req, res) => {
-  const centerDetails = req.body;
+  try {
+    const userDetails = req.body;
+    const token = req.token;
 
-  const verify = await verifyOtp(centerDetails.email, centerDetails.enteredOtp);
-
-  if (verify.error) {
-    res.status(400).json({ error: verify.error });
-  }
-
-  if (verify.success) {
-    const change = await DropOffCenter.findOneAndUpdate(
-      { email: userDetails.email },
-      {
-        password: await hashPassword(centerDetails.password),
-      }
-    );
-    if (change) {
-      // await clearOtp(userDetails.email);
-
-      res
-        .status(200)
-        .json({ success: "Password changed successfully, go back to login" });
+    if (!token) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Invalid or missing token" });
     }
+
+    const center = await DropOffCenter.findOne({ token });
+    if (!center) {
+      return res.status(404).json({ error: "Center not found" });
+    }
+
+    const verify = await verifyOtp(center.email, userDetails.enteredOtp);
+
+    if (verify.error) {
+      return res.status(400).json({ error: verify.error });
+    }
+
+    if (verify.success) {
+      const change = await DropOffCenter.findOneAndUpdate(
+        { email: center.email },
+        {
+          password: await hashPassword(userDetails.password),
+        }
+      );
+
+      if (change) {
+        return res
+          .status(200)
+          .json({ success: "Password changed successfully, go back to login" });
+      } else {
+        return res.status(500).json({ error: "Failed to change password" });
+      }
+    }
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
 const dropHistory = async (req, res) => {
-  const {
-    query: { token },
-  } = req;
+  const token = req.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: Missing token" });
+  }
 
   try {
     const dropOffCenter = await DropOffCenter.findOne({ token });
@@ -146,6 +197,7 @@ const dropHistory = async (req, res) => {
     }
 
     const history = await Drop.find({ collectorID: dropOffCenter.collectorID });
+
     if (history.length === 0) {
       return res.status(400).json({ error: "No drop history found" });
     }

@@ -7,12 +7,14 @@ const {
   changePassword,
   dropHistory,
 } = require("../controllers/dropOffCenterController");
+const authUser = require("../middleWare/authUser");
+const checkActiveAccount = require("../middleWare/checkActiveAccount");
 
 router.post("/register", registerCenter);
 router.post("/login", loginCenter);
-router.delete("/delete", deleteCenter);
-router.patch("/update", updateCenter);
-router.patch("/changePassword", changePassword);
-router.get("/history", dropHistory);
+router.delete("/delete", authUser, checkActiveAccount, deleteCenter);
+router.patch("/update", authUser, checkActiveAccount, updateCenter);
+router.patch("/changePassword", authUser, checkActiveAccount, changePassword);
+router.get("/history", authUser, checkActiveAccount, dropHistory);
 
 module.exports = router;

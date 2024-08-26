@@ -32,7 +32,7 @@ const verifyOtp = async (email, otp) => {
   const centerExists = await DropOffCenter.find({ email });
   const otpEntry = await Otp.findOne({ email });
 
-  if (!userExists || !centerExists) {
+  if (!userExists && !centerExists) {
     return { error: "Invalid email" };
   }
 

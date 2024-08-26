@@ -1,11 +1,13 @@
 const { generateOtp, storeOtp } = require("../config/otp");
 const Collector = require("../models/collectorModel");
+const DropOffCenter = require("../models/dropOffCenterModel");
 
 const getOTP = async (req, res) => {
   const email = req.body;
-  const user = await Collector.findOne(email);
+  const collector = await Collector.findOne(email);
+  const center = await DropOffCenter.findOne(email);
 
-  if (!user) {
+  if (!collector && !center) {
     res.status(401).json({ error: "Invalid email" });
   } else {
     const otp = generateOtp();

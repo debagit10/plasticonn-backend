@@ -1,11 +1,7 @@
 const Collector = require("../models/collectorModel");
 const Collect = require("../models/collectModel");
 const { hashPassword, verifyPassword } = require("../config/password");
-const {
-  generateToken,
-  encryptToken,
-  decryptToken,
-} = require("../config/token");
+const { generateToken, encryptToken } = require("../config/token");
 const generateID = require("../config/generateID");
 const { verifyOtp } = require("../config/otp");
 
@@ -74,7 +70,7 @@ const loginCollector = async (req, res) => {
 };
 
 const deleteCollector = async (req, res) => {
-  const token = req.decryptedToken;
+  const token = req.token;
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized: Missing token" });
@@ -107,7 +103,7 @@ const deleteCollector = async (req, res) => {
 };
 
 const updateCollector = async (req, res) => {
-  const token = req.decryptedToken;
+  const token = req.token;
   const updatedData = req.body;
 
   if (!token) {
@@ -143,7 +139,7 @@ const updateCollector = async (req, res) => {
 };
 
 const collectorHistory = async (req, res) => {
-  const token = req.decryptedToken;
+  const token = req.token;
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized: Missing token" });
@@ -171,7 +167,7 @@ const collectorHistory = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const userDetails = req.body;
-    const token = req.decryptedToken;
+    const token = req.token;
 
     if (!token) {
       return res
