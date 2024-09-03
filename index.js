@@ -20,8 +20,6 @@ app.get("/", (req, res) => {
   res.status(200).send("I AM PLASTICONN SERVER");
 });
 
-app.get("/auth", authUser);
-
 app.get("/getOTP", getOTP);
 
 app.use("/api/collector", collectorRoutes);
