@@ -6,7 +6,6 @@ const collectorRoutes = require("./routes/collectorRoutes");
 const dropOffCenterRoutes = require("./routes/dropOffCenterRoutes");
 const dropRoute = require("./routes/dropRoute");
 const getOTP = require("./middleWare/getOTP");
-const authUser = require("./middleware/authUser");
 
 const app = express();
 const PORT = process.env.PORT || 5500;
