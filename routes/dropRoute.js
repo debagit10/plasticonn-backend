@@ -5,7 +5,7 @@ const {
   manageDrop,
 } = require("../controllers/dropControllers");
 const authUser = require("../middleWare/authUser");
-const checkActiveAccount = require("../middleware/checkActiveAccount.js");
+const checkActiveAccount = require("../middleWare/checkActiveAccount");
 
 router.post("/add", authUser, checkActiveAccount, drop);
 router.get("/view", authUser, checkActiveAccount, viewDrop);
