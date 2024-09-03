@@ -5,10 +5,10 @@ const {
   manageDrop,
 } = require("../controllers/dropControllers");
 const authUser = require("../middleWare/authUser");
-//const checkActiveAccount = require("../middleWare/checkActiveAccount");
+const checkActiveAccount = require("../middleWare/checkActiveAccount");
 
-router.post("/add", authUser, drop);
-router.get("/view", authUser, viewDrop);
-router.patch("/manage", authUser, manageDrop);
+router.post("/add", authUser, checkActiveAccount, drop);
+router.get("/view", authUser, checkActiveAccount, viewDrop);
+router.patch("/manage", authUser, checkActiveAccount, manageDrop);
 
 module.exports = router;
