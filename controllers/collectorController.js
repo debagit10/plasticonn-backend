@@ -23,6 +23,7 @@ const registerCollector = async (req, res) => {
         res.status(201).json({
           success: "Registration successful",
           token: encryptToken(register.token),
+          userID: register._id,
         });
       } else {
         res.status(500).json({ error: "Registration failed" });
@@ -60,9 +61,11 @@ const loginCollector = async (req, res) => {
 
     await Collector.findByIdAndUpdate(user._id, { token });
 
-    return res
-      .status(200)
-      .json({ success: "Login successful", token: encryptToken(token) });
+    return res.status(200).json({
+      success: "Login successful",
+      token: encryptToken(token),
+      userID: user._id,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Server error" });

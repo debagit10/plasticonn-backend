@@ -25,6 +25,7 @@ const registerCenter = async (req, res) => {
         res.status(201).json({
           success: "Registration successful",
           token: encryptToken(register.token),
+          userID: register._id,
         });
       } else {
         res.status(500).json({ error: "Registration failed" });
@@ -42,7 +43,9 @@ const loginCenter = async (req, res) => {
   const userData = req.body;
 
   try {
-    const center = await DropOffCenter.findOne({ email: userData.email });
+    const center = await DropOffCenter.findOne({
+      $or: [{ email: userData.email }, { centerID: userData.centerID }],
+    });
 
     if (!center) {
       return res.status(401).json({ error: "Center does not exist" });
@@ -64,7 +67,11 @@ const loginCenter = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: "Login successful", token: encryptToken(token) });
+      .json({
+        success: "Login successful",
+        token: encryptToken(token),
+        userID: center._id,
+      });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Server error" });
