@@ -6,7 +6,7 @@ const collectorSchema = mongoose.Schema(
     phone: { type: Number, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     address: { type: String, required: true },
-    idNumber: { type: Number, required: true },
+    means_of_ID: { type: String, required: true },
     password: { type: String, required: true },
     collectorID: { type: String, required: true, unique: true },
     pic: {

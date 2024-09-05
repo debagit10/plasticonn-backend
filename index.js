@@ -5,6 +5,7 @@ const cors = require("cors");
 const collectorRoutes = require("./routes/collectorRoutes");
 const dropOffCenterRoutes = require("./routes/dropOffCenterRoutes");
 const dropRoute = require("./routes/dropRoute");
+const uploadRoutes = require("./routes/uploadRoutes");
 const getOTP = require("./middleWare/getOTP");
 
 const app = express();
@@ -24,5 +25,6 @@ app.get("/getOTP", getOTP);
 app.use("/api/collector", collectorRoutes);
 app.use("/api/dropOffCenter", dropOffCenterRoutes);
 app.use("/api/drop", dropRoute);
+app.use("/api/upload", uploadRoutes);
 
 app.listen(PORT, () => console.log(`Server is live on port ${PORT}`));
