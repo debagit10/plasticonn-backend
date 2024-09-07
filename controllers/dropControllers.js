@@ -39,8 +39,8 @@ const manageDrop = async (req, res) => {
       return res.status(404).json({ error: "Drop-off center not found" });
     }
 
-    const drop = await Drop.findById(
-      dropID,
+    const drop = await Drop.findOneAndUpdate(
+      { _id: dropID },
       { accepted: status },
       { new: true, runValidators: true }
     );
@@ -57,18 +57,12 @@ const manageDrop = async (req, res) => {
 };
 
 const viewDrop = async (req, res) => {
-  const { dropID } = req.body;
+  const { dropID } = req.query;
   const token = req.token;
 
   try {
     const collector = await Collector.findOne({ token });
     const center = await Center.findOne({ token });
-
-    // if (!collector && !center) {
-    //   return res.status(404).json({ error: "Collector not found" });
-    // } else if (!center) {
-    //   return res.status(404).json({ error: "Center not found" });
-    // }
 
     if (!collector && !center) {
       return res.status(404).json({ error: "User not found" });

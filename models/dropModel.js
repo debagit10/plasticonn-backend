@@ -8,6 +8,8 @@ const dropSchema = mongoose.Schema(
     centerID: { type: String, required: true },
     condition: { type: String, required: true },
     accepted: { type: Boolean, default: false },
+    status: { type: Boolean, default: false },
+    amount: { type: Number, required: true },
   },
   { timestamps: true }
 );

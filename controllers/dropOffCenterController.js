@@ -65,13 +65,11 @@ const loginCenter = async (req, res) => {
 
     await DropOffCenter.findByIdAndUpdate(center._id, { token });
 
-    return res
-      .status(200)
-      .json({
-        success: "Login successful",
-        token: encryptToken(token),
-        userID: center._id,
-      });
+    return res.status(200).json({
+      success: "Login successful",
+      token: encryptToken(token),
+      userID: center._id,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Server error" });
@@ -203,7 +201,7 @@ const dropHistory = async (req, res) => {
       return res.status(404).json({ error: "Drop-off center not found" });
     }
 
-    const history = await Drop.find({ collectorID: dropOffCenter.collectorID });
+    const history = await Drop.find({ centerID: dropOffCenter.centerID });
 
     if (history.length === 0) {
       return res.status(400).json({ error: "No drop history found" });
