@@ -21,8 +21,6 @@ const registerCollector = async (req, res) => {
 
       if (register) {
         res.status(201).json({
-          success: "Registration successful",
-          token: encryptToken(register.token),
           userID: register._id,
         });
       } else {
