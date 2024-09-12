@@ -26,7 +26,7 @@ const registerCollector = async (req, res) => {
           userID: register._id,
         });
       } else {
-        res.status(500).json({ error: "Registration failed" });
+        res.status(500).json({ error: "Registration failed " });
       }
     } else {
       res.status(409).json({ info: "User with this email exists" });
