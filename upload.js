@@ -2,7 +2,7 @@ const multer = require("multer");
 const {
   plasticonnUserPics,
   plasticonnUserFiles,
-} = require("../config/cloudinary");
+} = require("./config/cloudinary");
 
 const picture = multer({ storage: plasticonnUserPics }).single("image");
 const file = multer({ storage: plasticonnUserFiles }).single("file");
