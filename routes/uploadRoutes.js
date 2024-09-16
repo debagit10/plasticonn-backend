@@ -1,5 +1,5 @@
 const { files, pics } = require("../controllers/uploadController");
-const { uploadFiles, uploadPics } = require("../middleware/upload.js");
+const { uploadFiles, uploadPics } = require("../upload");
 const router = require("express").Router();
 
 router.post("/file", uploadFiles, files);
