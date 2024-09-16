@@ -20,7 +20,6 @@ const checkActiveAccount = async (req, res, next) => {
     return res.status(404).json({ error: "Not found" });
   }
 
-  // Store the collector in the request object for use in the next handlers
   req.token = token;
   next();
 };
