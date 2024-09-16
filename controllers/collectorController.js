@@ -209,6 +209,21 @@ const changePassword = async (req, res) => {
   }
 };
 
+const collectorData = async (req, res) => {
+  try {
+    const token = req.token;
+    const user = await Collector.findOne({ token });
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error displaying user data", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   registerCollector,
   loginCollector,
@@ -216,4 +231,5 @@ module.exports = {
   updateCollector,
   changePassword,
   collectorHistory,
+  collectorData,
 };

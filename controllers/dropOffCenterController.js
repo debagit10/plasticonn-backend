@@ -214,6 +214,21 @@ const dropHistory = async (req, res) => {
   }
 };
 
+const dropOffCenterData = async (req, res) => {
+  try {
+    const token = req.token;
+    const user = await DropOffCenter.findOne({ token });
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error displaying user data", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   registerCenter,
   loginCenter,
@@ -221,4 +236,5 @@ module.exports = {
   updateCenter,
   changePassword,
   dropHistory,
+  dropOffCenterData,
 };
