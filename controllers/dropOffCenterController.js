@@ -207,7 +207,7 @@ const dropHistory = async (req, res) => {
       return res.status(400).json({ error: "No drop history found" });
     }
 
-    res.status(200).json({ success: history });
+    res.status(200).json(history);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
