@@ -229,6 +229,25 @@ const dropOffCenterData = async (req, res) => {
   }
 };
 
+const getAllCenters = async (req, res) => {
+  try {
+    const token = req.token;
+    if (token) {
+      const centers = await DropOffCenter.find({});
+      if (!centers) {
+        res.status(404).json({ error: "Centers not found" });
+      } else {
+        res.status(200).json(centers);
+      }
+    } else {
+      res.status(401).json({ error: "Unauthorized" });
+    }
+  } catch (error) {
+    console.error("Error getting centers", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   registerCenter,
   loginCenter,
@@ -237,4 +256,5 @@ module.exports = {
   changePassword,
   dropHistory,
   dropOffCenterData,
+  getAllCenters,
 };

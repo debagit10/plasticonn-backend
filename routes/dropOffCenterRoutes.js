@@ -7,6 +7,7 @@ const {
   changePassword,
   dropHistory,
   dropOffCenterData,
+  getAllCenters,
 } = require("../controllers/dropOffCenterController");
 const authUser = require("../middleWare/authUser");
 const checkActiveAccount = require("../middleWare/checkActiveAccount");
@@ -18,5 +19,6 @@ router.patch("/update", authUser, checkActiveAccount, updateCenter);
 router.patch("/changePassword", authUser, checkActiveAccount, changePassword);
 router.get("/history", authUser, checkActiveAccount, dropHistory);
 router.get("/userData", authUser, checkActiveAccount, dropOffCenterData);
+router.get("/get", authUser, checkActiveAccount, getAllCenters);
 
 module.exports = router;
