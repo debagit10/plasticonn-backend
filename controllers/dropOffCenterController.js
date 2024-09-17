@@ -233,7 +233,7 @@ const getAllCenters = async (req, res) => {
   try {
     const token = req.token;
     if (token) {
-      const centers = await DropOffCenter.find({});
+      const centers = await DropOffCenter.find({ deleted: false });
       if (!centers) {
         res.status(404).json({ error: "Centers not found" });
       } else {
