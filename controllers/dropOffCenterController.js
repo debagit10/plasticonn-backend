@@ -10,6 +10,7 @@ const registerCenter = async (req, res) => {
 
   const centerExists = await DropOffCenter.findOne({
     email: centerData.email,
+    deleted: false,
   });
 
   try {
